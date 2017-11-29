@@ -47,7 +47,7 @@ def make_poster(text, bgcolor='#FFFFFF', fgcolor='#000000'):
 
     posterurl = s3.generate_presigned_url('get_object', Params={
         'Bucket': S3_BUCKET, 'Key': s3key
-    }, ExpiresIn=(7 * 24 * 60 * 60))
+    }, ExpiresIn=(30 * 24 * 60 * 60))
     return posterurl
 
 
