@@ -19,7 +19,7 @@ parser = reqparse.RequestParser()
 parser.add_argument('text', required=True, help="You need to send me some text!")
 parser.add_argument('bgcolor', required=False, help="Optionally, send a Hex colour for the background", default='#FFFFFF')
 parser.add_argument('fgcolor', required=False, help="Optionally, send a Hex colour for the foreground (text)", default='#000000')
-parser.add_argument('dpi', required=False, help="Optionally, specify the resolution of the image in DPI. (Size is around A4).", default=60, type=int)
+parser.add_argument('dpi', required=False, help="Optionally, specify the resolution of the image in DPI. (Size is around A4). If a list of values (e.g. [60, 300]) response is a list of URLs in this order.", default=60, type=int, action='append')
 parser.add_argument('days_before_expire', required=False, help="Optionally, specify how many days the URL should be valid for.", default=30, type=int)
 
 
@@ -60,4 +60,7 @@ class PosterMaker(Resource):
         fgcolor = args.get('fgcolor')
         dpi = args.get('dpi')
         days = args.get('days_before_expire')
-        return make_poster(text, bgcolor, fgcolor, dpi, days)
+        if len(dpi) > 1:
+            return [make_poster(text, bgcolor, fgcolor, d, days) for d in dpi]
+        else:
+            return make_poster(text, bgcolor, fgcolor, dpi, days)
