@@ -19,9 +19,11 @@ parser = reqparse.RequestParser()
 parser.add_argument('text', required=True, help="You need to send me some text!")
 parser.add_argument('bgcolor', required=False, help="Optionally, send a Hex colour for the background", default='#FFFFFF')
 parser.add_argument('fgcolor', required=False, help="Optionally, send a Hex colour for the foreground (text)", default='#000000')
+parser.add_argument('dpi', required=False, help="Optionally, specify the resolution of the image in DPI. (Size is around A4).", default=60)
+parser.add_argument('days_before_expire', required=False, help="Optionally, specify how many days the URL should be valid for.", default=30)
 
 
-def make_poster(text, bgcolor='#FFFFFF', fgcolor='#000000'):
+def make_poster(text, bgcolor='#FFFFFF', fgcolor='#000000', dpi=60, days=30):
     words = text.split()
     aspect_ratio = 1.414  # ISO 216
     line_spacing = 1.5
@@ -29,7 +31,6 @@ def make_poster(text, bgcolor='#FFFFFF', fgcolor='#000000'):
     lines = textwrap.wrap(text, chars_per_line, break_long_words=False)
     longest_line_chars = max([len(l) for l in lines])
     font_size = int(10.5 * 72. / longest_line_chars)  # Half inch padding. 72 pts/inch.
-    print('Using font size of %d' % font_size)
     poster_text = '\n'.join(lines)
 
     fig, ax= plt.subplots(1, 1, figsize=(11, 8))
@@ -39,7 +40,7 @@ def make_poster(text, bgcolor='#FFFFFF', fgcolor='#000000'):
 
     poster_im = io.BytesIO()
     plt.tight_layout()
-    plt.savefig(poster_im, format='png', dpi=300)
+    plt.savefig(poster_im, format='png', dpi=dpi)
     poster_im.seek(0)
     s3 = boto3.client('s3')
     s3key = '{uuid}.png'.format(uuid=str(uuid.uuid4()))
@@ -47,16 +48,16 @@ def make_poster(text, bgcolor='#FFFFFF', fgcolor='#000000'):
 
     posterurl = s3.generate_presigned_url('get_object', Params={
         'Bucket': S3_BUCKET, 'Key': s3key
-    }, ExpiresIn=(30 * 24 * 60 * 60))
+    }, ExpiresIn=(days * 24 * 60 * 60))
     return posterurl
 
 
 class PosterMaker(Resource):
     def post(self):
-        print('Request from API!')
         args = parser.parse_args()
         text = args.get('text')
         bgcolor = args.get('bgcolor')
         fgcolor = args.get('fgcolor')
-        print(text)
-        return make_poster(text, bgcolor, fgcolor)
+        dpi = args.get('dpi')
+        days = args.get('days_before_expire')
+        return make_poster(text, bgcolor, fgcolor, dpi, days)
