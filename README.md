@@ -10,7 +10,7 @@ A little API to make a poster image from some text, able to run serverless on [A
 # Example request
 ```
 curl -X POST \
-https://something.execute-api.eu-west-1.amazonaws.com/dev/wordcloud \
+https://something.execute-api.eu-west-1.amazonaws.com/dev/poster \
   -H 'content-type: application/json' \
   -d '{
 	"text": "We choose to go to the moon in this decade and do the other things, not because they are easy, but because they are hard",
