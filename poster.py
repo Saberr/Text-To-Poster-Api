@@ -60,7 +60,7 @@ class PosterMaker(Resource):
         fgcolor = args.get('fgcolor')
         dpi = args.get('dpi')
         days = args.get('days_before_expire')
-        if len(dpi) > 1:
+        if type(dpi) is list:
             return [make_poster(text, bgcolor, fgcolor, d, days) for d in dpi]
         else:
             return make_poster(text, bgcolor, fgcolor, dpi, days)
